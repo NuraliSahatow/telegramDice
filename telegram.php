@@ -5,25 +5,31 @@ $update = json_decode(file_get_contents("php://input"), TRUE);
 $chatId = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
 $token = "6329575854:AAEWTNYX_Lz-yKFRb3Q22o-tmUauXCA0f_M";
-
-// Массив для хранения активных комнат для игры
-
+$dbHost = "localhost";
+$dbUser = "id21302815_dicebot";
+$dbPassword = "Dice_Bot1";
+$dbName = "id21302815_dicebotdb";
+$balance = 0.0;
+$mysqli = new mysqli($dbHost, $dbUser, $dbPassword, $dbName);
 if ($message == "/start") {
-    $username = $update["message"]["from"]["username"];
-    $firstName = $update["message"]["from"]["first_name"];
-    $lastName = $update["message"]["from"]["last_name"];
-    $userId = $update["message"]["from"]["id"]; // Добавлено получение ID пользователя
-    $mysqli = new mysqli("sql310.byethost24.com", "b24_35100357", "dicebot", "b24_35100357_dicebot");
 
-    // Проверка подключения к базе данных
-    if ($mysqli->connect_error) {
-        die("Ошибка подключения к базе данных: " . $mysqli->connect_error);
-    }
+// User data
+$username = $update["message"]["from"]["username"];
+$firstName = $update["message"]["from"]["first_name"];
+$lastName = $update["message"]["from"]["last_name"];
+$userId = $update["message"]["from"]["id"];
+$balance = 0.0; // Default balance
 
-    // SQL-запрос для вставки данных
-    $sql = "INSERT INTO users (username, first_name, last_name, balance, chat_id ) VALUES ('$username', '$firstName', '$lastName', 0.0,$userId )";    // Выполняем запрос
-    $mysqli->query($sql);
+// SQL statement with placeholders
+$sql = "INSERT INTO users (username, first_name, last_name, balance, chat_id) VALUES (?, ?, ?, ?, ?)";
 
+// Create a prepared statement
+$stmt = $mysqli->prepare($sql);
+
+// Bind parameters to the statement
+$stmt->bind_param("ssdii", $username, $firstName, $lastName, $balance, $userId);
+
+$stmt->execute();
         $keyboard = [
             "inline_keyboard" => [
                 [
